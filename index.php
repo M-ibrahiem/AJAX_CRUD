@@ -62,11 +62,13 @@
 
     function addstudent(e) {
       e.preventDefault(); // stop button submit  => e all event data
+      var sid = document.getElementById('stuid');
       var nm = document.getElementById('nameid').value;
       var em = document.getElementById('emailid').value;
       var pw = document.getElementById('passwordid').value;
 
       const formData = {
+        id:sid.value,
         name: nm,
         email: em,
         password: pw
@@ -82,7 +84,9 @@
           // handle response
           document.getElementById('msg')
             .innerHTML = `<div class="alert alert-success">${nxhr.responseText}</div>`; //=> alert
-          document.getElementById('myform').reset(); // => referesh to form
+            sid.value =null;
+            document.getElementById('myform').reset(); // => referesh to form
+
           ShowData();
 
         } else {
@@ -96,7 +100,8 @@
     var tbody = document.getElementById('tbody');
 
     function ShowData() {
-      tbody.innerHTML ="";
+
+      tbody.innerHTML = "";
       const nxhr = new XMLHttpRequest();
       nxhr.open('GET', 'select.php', true);
       nxhr.send();
@@ -113,8 +118,8 @@
               <td>${std.email}</td>
               <td>${std.password}</td>
               <td>
-                <button class="btn btn-info">edit</button>
-                <button class="btn btn-danger">delete</button>
+                <button class="btn btn-outline-info"   data-flag= '${std.id}' onclick="edt_s(this)">edit</button>
+                <button class="btn btn-outline-danger" data-flag= '${std.id}' onclick="del_s(this)">delete</button>
               </td>
             </tr>
           `
@@ -124,6 +129,58 @@
           alert('plz try again');
         }
       }
+    }
+    ShowData();
+
+    function del_s(btn) {
+      var myId = btn.getAttribute('data-flag');
+      var JsId = {
+        id: myId
+      };
+      var JsonId = JSON.stringify(JsId);
+      const nxhr = new XMLHttpRequest();
+      nxhr.open('DELETE', 'delete.php', true);
+
+      nxhr.send(JsonId);
+      nxhr.onload = function() {
+        if (nxhr.status == 200) {
+          document.getElementById(
+            "msg"
+          ).innerHTML = `<div class="alert alert-danger"> ${nxhr.responseText}</div>`;
+          ShowData();
+        } else {
+          alert('fail');
+        }
+      }
+    }
+
+
+    function edt_s(btn) {
+      var myId = btn.getAttribute('data-flag');
+      let hInput =document.getElementById('stuid')
+      var nm = document.getElementById('nameid');
+      var em = document.getElementById('emailid');
+      var pw = document.getElementById('passwordid');
+      var stdData = { id: myId};
+      var stdDataJson = JSON.stringify(stdData);
+
+      const nxhr = new XMLHttpRequest();
+      nxhr.open('POST', 'edit.php', true);
+      nxhr.send(stdDataJson);
+      nxhr.onload = function() {
+        if (nxhr.status == 200) {
+          var studentData = JSON.parse(nxhr.responseText);
+          hInput.style.display = "block"
+          hInput.value = studentData.id;
+          hInput.style.display = "none"
+          nm.value =studentData.name;
+          em.value =studentData.email;
+          pw.value =studentData.password;
+          
+        }else{
+          alert ("failll") 
+        }
+      }   
     }
   </script>
   <script src="js/bootstrap.min.js"></script>
